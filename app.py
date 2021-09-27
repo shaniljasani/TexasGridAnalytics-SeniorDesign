@@ -4,7 +4,7 @@ from flask_restful import Api, Resource, reqparse
 from api.ApiHandler import HelloApiHandler
 
 app = Flask(__name__, static_url_path='', static_folder='frontend/build')
-CORS(app) #comment this on deployment
+# CORS(app) #comment this on deployment
 api = Api(app)
 
 @app.route("/", defaults={'path':''})
