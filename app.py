@@ -1,10 +1,10 @@
 from flask import Flask, send_from_directory
 from flask_restful import Api, Resource, reqparse
-# from flask_cors import CORS #comment this on deployment
+from flask_cors import CORS #comment this on deployment
 from api.ApiHandler import HelloApiHandler
 
 app = Flask(__name__, static_url_path='', static_folder='frontend/build')
-# CORS(app) #comment this on deployment
+CORS(app) #comment this on deployment
 api = Api(app)
 
 @app.route("/", defaults={'path':''})
@@ -14,5 +14,5 @@ def serve(path):
 api.add_resource(HelloApiHandler, '/flask/hello')
 
 
-# if __name__ == '__main__':
-#     app.run(debug=True, host='localhost', port=5000)
+if __name__ == '__main__':
+    app.run(debug=True, host='localhost', port=5000)
