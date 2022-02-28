@@ -626,5 +626,9 @@ def home():
     return render_template('index.html', swd_data=swd_data, swd_labels=swd_labels)
 
 
+@app.errorhandler(404)
+def FUN_404(error):
+    return render_template("404.html"), 404
+
 if __name__ == '__main__':
     app.run(debug=True, host='localhost', port=5001)
