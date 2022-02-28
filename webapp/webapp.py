@@ -636,12 +636,36 @@ def login():
 
 @app.route("/")
 def home():
-    # print(swd_data)
-    # print(swd_labels)
+    
+    # if request.method == 'POST':
+    #     user = request.form.get("id")
+    #     pw = request.form.get("pw")
+
+    #     uid = int(verify(user, pw))
+
+    #     if uid:
+    #         #log_user_activity(uid, "/login", timestamp)
+    #         session["user"] = uid
+    #         get_camp(uid)
+    #         return redirect(url_for("index"))
+
+    #     data["invalid"] = True
+    #     return render_template("login.html", data=data)
+    
+    # user_id = session.get("user", None)
+    # if user_id:
+    #     return redirect(url_for("index"))
+    
+    # return render_template("login.html", data=data)
+
     if session.get('id', None):
         return render_template('home.html')
     else:
         return render_template('login.html')
+
+@app.route('/chart-system-wide-demand')
+def swd():
+    return render_template('swd.html', swd_data=swd_data, swd_labels=swd_labels)
 
 
 @app.errorhandler(404)
