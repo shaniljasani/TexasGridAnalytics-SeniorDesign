@@ -1,6 +1,7 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, session, request, redirect, url_for
 
 app = Flask(__name__, static_url_path='', static_folder='')
+app.secret_key = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 # demo data
 swd_labels = ["2022-01-20 23:15",
@@ -619,11 +620,28 @@ swd_data = [51468.5,
 45007.8,
 44963.8]
 
+@app.route("/login", methods=["GET","POST"])
+def login():
+    if request.method == 'POST':
+        user = request.form.get("username")
+        pw = request.form.get("password")
+
+        if user == "FH10" and pw == "demo":
+            session['id'] = user
+            return redirect(url_for("home"))
+        else:
+            return render_template('login.html', message="Invalid username or password")
+    else:
+        return render_template('login.html')
+
 @app.route("/")
 def home():
     # print(swd_data)
     # print(swd_labels)
-    return render_template('index.html', swd_data=swd_data, swd_labels=swd_labels)
+    if session.get('id', None):
+        return render_template('home.html')
+    else:
+        return render_template('login.html')
 
 
 @app.errorhandler(404)

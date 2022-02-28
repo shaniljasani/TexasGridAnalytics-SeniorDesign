@@ -1,0 +1,29 @@
+{% extends "template.html" %}
+{% block page_title %}Home{% endblock %}
+{% block main_panel %}
+{{ super() }}
+
+<h1> welcome to the homepage </h1>
+
+<p> envisioning a grid with buttons for each chart</p>
+
+
+<div class="col-md-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">Social Icon Buttons</h4>
+        <p class="card-description">Add class</p>
+        <div class="template-demo">
+            <button type="button" class="btn btn-success btn-lg btn-fw">Success</button>
+            <button type="button" class="btn btn-danger btn-lg btn-fw">Danger</button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block js_scripts %}
+
+{% endblock %}
