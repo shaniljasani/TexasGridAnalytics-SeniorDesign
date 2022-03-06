@@ -7,6 +7,9 @@ import datetime as dt
 import shutil
 
 def get_chart(chart_type, start_date, end_date):
+    # demo data
+    chart_type = "RTSL"
+
     #connecting to sqlalchemy
     database_username = "admin"
     database_password = "dvqLt7v635tuf9Bf"
@@ -17,6 +20,9 @@ def get_chart(chart_type, start_date, end_date):
                                                    format(database_username, database_password, 
                                                           database_ip, database_name))
     connection = database_connection.connect() 
+
+    df = pd.read_sql_table(chart_type, connection)
+    return df
 
 
 # def updateTable(table, source):

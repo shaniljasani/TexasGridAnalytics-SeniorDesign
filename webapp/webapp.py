@@ -16,7 +16,7 @@ def login():
             session['id'] = user
             return redirect(url_for("home"))
         else:
-            return render_template('login.html', message="Invalid username or password")
+            return render_template('login.html', error="Invalid username or password")
     else:
         return render_template('login.html')
 
@@ -25,7 +25,28 @@ def home():
     if session.get('id', None):
         return render_template('home.html')
     else:
-        return render_template('login.html')
+        return render_template('login.html', error="Please login to access the site")
+
+# @appFlask.route('/index/', defaults={'subject' : 'Flask'})
+# @appFlask.route('/index/<subject>')
+
+@app.route('/chart/<chart_type>')
+@app.route('/chart/<chart_type>/<start_date>/<end_date>')
+def swd(chart_type = 'RTSL', start_date = 'today', end_date = 'today'):
+    if session.get('id', None):
+        chart = get_chart(chart_type, start_date, end_date)
+        print(chart)
+        days = chart["OperatingDay"].tolist()
+        times = chart["HourEnding"].tolist()
+        # print(times)
+        # times = str(times)
+        # print(times)
+
+        # '2022-01-20 23:30'
+
+        return render_template('chart.html', swd_data=chart["Valley"].tolist(), swd_labels="")
+    else:
+        return render_template('login.html', error="You are not signed in.")
 
 @appFlask.route('/index/', defaults={'subject' : 'Flask'})
 @appFlask.route('/index/<subject>')
