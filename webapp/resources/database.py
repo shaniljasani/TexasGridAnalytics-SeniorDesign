@@ -5,10 +5,9 @@ import pandas as pd
 import sqlalchemy
 import datetime as dt
 import shutil
+import datetime
 
 def get_chart(chart_type, start_date, end_date):
-    # demo data
-    chart_type = "RTSL"
 
     #connecting to sqlalchemy
     database_username = "admin"
@@ -22,6 +21,22 @@ def get_chart(chart_type, start_date, end_date):
     connection = database_connection.connect() 
 
     df = pd.read_sql_table(chart_type, connection)
+
+    if chart_type == "RTSL":
+        ch_data = df["Valley"].tolist()
+        ch_days = df['OperatingDay'].tolist()
+        ch_times = df['HourEnding'].tolist()
+
+        ch_days_dt = []
+        for day in ch_days:
+            ch_days_dt.append(pd.Timestamp.to_pydatetime(day))
+        
+        ch_labels = []
+        for x in range(len(ch_days_dt)):
+            ch_labels.append(str(datetime.datetime.combine(ch_days_dt[x], ch_times[x]).strftime('%Y-%m-%d %H:%M')))
+
+        return ch_data, ch_labels
+    
     return df
 
 

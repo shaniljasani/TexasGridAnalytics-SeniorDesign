@@ -34,30 +34,10 @@ def home():
 @app.route('/chart/<chart_type>/<start_date>/<end_date>')
 def swd(chart_type = 'RTSL', start_date = 'today', end_date = 'today'):
     if session.get('id', None):
-        chart = get_chart(chart_type, start_date, end_date)
-        print(chart)
-        days = chart["OperatingDay"].tolist()
-        times = chart["HourEnding"].tolist()
-        # print(times)
-        # times = str(times)
-        # print(times)
-
-        # '2022-01-20 23:30'
-
-        return render_template('chart.html', swd_data=chart["Valley"].tolist(), swd_labels="")
+        chartdata, chartlabels = get_chart(chart_type, start_date, end_date)
+        return render_template('chart.html', chart_data=chartdata, chart_labels=chartlabels, page_content=chart_page_content[chart_type])
     else:
         return render_template('login.html', error="You are not signed in.")
-
-@appFlask.route('/index/', defaults={'subject' : 'Flask'})
-@appFlask.route('/index/<subject>')
-
-@app.route('/chart/<chart_type>/<start_date>/<end_date>')
-def swd(chart_type, start_date, end_date):
-    chart = get_chart(chart_type, start_date, end_date)
-    if session.get('id', None):
-        return render_template('swd.html', swd_data=chart['data'], swd_labels=chart['labels'])
-    else:
-        return render_template('login.html')
 
 
 @app.errorhandler(404)
