@@ -27,8 +27,15 @@ def home():
     else:
         return render_template('login.html', error="Please login to access the site")
 
-# @appFlask.route('/index/', defaults={'subject' : 'Flask'})
-# @appFlask.route('/index/<subject>')
+chart_page_content = {
+    "RTSL": ["real-time-system-load", "longer description here."],
+    "RTSC": ["real-time-system-c", "longer description to come"],
+    "SASC": ["real-time-system-c", "longer description to come"],
+    "SEL": ["real-time-system-c", "longer description to come"],
+    "SPP": ["real-time-system-c", "longer description to come"],
+    "SWL": ["real-time-system-c", "longer description to come"],
+    "WPP": ["real-time-system-c", "longer description to come"],
+}
 
 @app.route('/chart/<chart_type>')
 @app.route('/chart/<chart_type>/<start_date>/<end_date>')
