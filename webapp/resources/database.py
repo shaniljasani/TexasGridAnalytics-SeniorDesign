@@ -1,11 +1,16 @@
-
-import os
-import glob
 import pandas as pd
 import sqlalchemy
-import datetime as dt
-import shutil
 import datetime
+
+def combine_date_time_24bug(date, time):
+    combined = []
+    for x in range(len(date)):
+        if time[x] == datetime.time(hour=0, minute=0):
+            temp_combination = str(datetime.datetime.combine(date[x] + datetime.timedelta(days=1), time[x]).strftime('%Y-%m-%d %H:%M'))
+        else:
+            temp_combination = str(datetime.datetime.combine(date[x], time[x]).strftime('%Y-%m-%d %H:%M'))
+        combined.append(temp_combination)
+    return combined
 
 def combine_date_time(date, time):
     combined = []
@@ -37,7 +42,7 @@ def get_chart(chart_type, start_date, end_date):
         for day in ch_days:
             ch_days_dt.append(pd.Timestamp.to_pydatetime(day))
         
-        ch_labels = combine_date_time(ch_days_dt, ch_times)
+        ch_labels = combine_date_time_24bug(ch_days_dt, ch_times)
         return ch_data, ch_labels
     
     if chart_type == "SWL":

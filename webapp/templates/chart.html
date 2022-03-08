@@ -33,7 +33,7 @@
       <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
           <div class="card-body">
-            <h4 class="card-title">{{ page_content[0] }} in mW</h4>
+            <h4 class="card-title">{{ page_content[0] }}</h4>
             <canvas id="lineChart" style="height:250px"></canvas>
           </div>
         </div>
@@ -56,11 +56,14 @@
 {% block js_scripts %}
 <!-- Plugin js for this page -->
     <!-- <script src="assets/vendors/chart.js/Chart.min.js"></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.min.js"></script> -->
+    <script src="{{ url_for('static', filename='assets/vendors/date-fns/date_fns.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    
     <!-- End plugin js for this page -->
 
     <!-- Custom js for this page -->
-    <!-- <script src="assets/js/chart.js"></script> -->
     <script>
         $(function() {
   /* ChartJS
@@ -69,9 +72,9 @@
    */
   'use strict';
 
-  var swd_data = {{ chart_data }}
+  var js_chart_data = {{ chart_data }}
   
-  var swd_labels = {{ chart_labels|safe }}
+  var js_chart_labels = {{ chart_labels|safe }}
 
   var data = {
     labels: swd_labels,
