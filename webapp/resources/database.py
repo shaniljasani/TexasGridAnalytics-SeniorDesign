@@ -1,3 +1,4 @@
+from tracemalloc import start
 import pandas as pd
 import sqlalchemy
 import datetime
@@ -34,6 +35,9 @@ def get_chart(chart_type, start_date, end_date):
     df = pd.read_sql_table(chart_type, connection)
 
     if chart_type == "RTSL":
+        if (start_date and end_date):
+            df = df[df['OperatingDay'] >= pd.Timestamp(start_date)]
+            df = df[df['OperatingDay'] <= pd.Timestamp(end_date)]
         ch_data = df["Valley"].tolist()
         ch_days = df['OperatingDay'].tolist()
         ch_times = df['HourEnding'].tolist()
@@ -46,6 +50,9 @@ def get_chart(chart_type, start_date, end_date):
         return ch_data, ch_labels
     
     if chart_type == "SWL":
+        if (start_date and end_date):
+            df = df[df['OperatingDay'] >= pd.Timestamp(start_date)]
+            df = df[df['OperatingDay'] <= pd.Timestamp(end_date)]
         ch_data = df['Demand'].tolist()
         ch_days = df['OperatingDay'].tolist()
         ch_times = df['HourEnding'].tolist()
@@ -58,6 +65,9 @@ def get_chart(chart_type, start_date, end_date):
         return ch_data, ch_labels
     
     if chart_type == "SPP":
+        if (start_date and end_date):
+            df = df[df['OperatingDay'] >= pd.Timestamp(start_date)]
+            df = df[df['OperatingDay'] <= pd.Timestamp(end_date)]
         ch_data = df['SystemWide'].tolist()
         ch_days = df['OperatingDay'].tolist()
         ch_times = df['HourEnding'].tolist()
