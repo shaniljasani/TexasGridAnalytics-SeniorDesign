@@ -7,6 +7,9 @@ from DownloadSA import DownloadSA
 from UnzipFiles import Unzip
 import shutil
 
+import os
+from dotenv import load_dotenv
+
 # updateTable(table, source)
 #   Input:  Table = Name of the table to update
 #           Source = ERCOT URL
@@ -18,12 +21,15 @@ import shutil
 
 
 def updateTable(table, source):
+    # import enviornment variables
+    load_dotenv(dotenv_path="../.env")
+
     #connecting to sqlalchemy
-    database_username = "admin"
-    database_password = "dvqLt7v635tuf9Bf"
-    database_ip = "txgridanalytics-database.c3xnwzdtzngd.us-east-2.rds.amazonaws.com"
-    database_name = "GRID_ANALYTICS"
-    #port = "3306"
+    database_username = os.getenv("DB_USERNAME")
+    database_password = os.getenv("DB_PASSWORD")
+    database_ip = os.getenv("DB_IP")
+    database_name = os.getenv("DB_NAME")
+    #port = os.getenv("DB_PORT")
     database_connection = sqlalchemy.create_engine('mysql+pymysql://{0}:{1}@{2}/{3}'.
                                                    format(database_username, database_password, 
                                                           database_ip, database_name))
