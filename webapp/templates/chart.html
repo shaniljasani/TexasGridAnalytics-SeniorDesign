@@ -70,6 +70,21 @@
 
   </div>
   {% endif %}
+  
+  {% if (page_content[0] == "Generation by Fuel Type") %}
+  <div class="row">
+    <div class="col-lg-12 grid-margin stretch-card">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="card-title">{{ page_content[2] }}</h3>
+          <p>Data from {{ chart_start_date }} to {{ chart_end_date }}</p>
+          <canvas id="barChart" style="height:250px"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  {% endif %}
 
   <div class="row">
     <div class="col-lg-12 grid-margin stretch-card">
@@ -542,6 +557,315 @@
       csv_row.push(formatTime(csv_dateTime));
       csv_row.push(js_chart_data[0][i]);
       csv_row.push(js_chart_data[1][i]);
+
+      csv = csv + csv_row.join(',') + '\n';
+    }
+
+    var hiddenElement = document.createElement('a');
+    hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+    hiddenElement.target = '_blank';
+    hiddenElement.download = 'TGA-{{ page_content[0] }}-{{ chart_start_date }}-{{ chart_end_date }}.csv';
+    hiddenElement.click();
+  }
+
+</script>
+<!-- End Download CSV for this page -->
+
+{% endif %}
+
+{% if (page_content[0] == "Generation by Fuel Type") %}
+
+<!-- CHART js for this page -->
+<script>
+
+  $(function () {
+    /* ChartJS
+    * -------
+    * Data and config for chartjs
+    */
+    'use strict';
+
+
+  var js_chart_labels = {{ chart_labels| safe }}
+
+  var data = {
+    labels: js_chart_labels,
+    datasets: [
+      {
+        label: "Biomass",
+        data: {{ chart_data["Biomass"] }},
+        backgroundColor: [
+        'rgba(255, 99, 132, 0.2)'
+        ],
+        borderColor: [
+          'rgba(255,99,132,1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Coal",
+        data: {{ chart_data["Coal"] }},
+        backgroundColor: [
+        'rgba(54, 162, 235, 0.2)'
+        ],
+        borderColor: [
+        'rgba(54, 162, 235, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Gas",
+        data: {{ chart_data["Gas"] }},
+        backgroundColor: [
+        'rgba(255, 206, 86, 0.2)'
+        ],
+        borderColor: [
+        'rgba(255, 206, 86, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Gas-CC",
+        data: {{ chart_data["Gas-CC"] }},
+        backgroundColor: [
+        'rgba(75, 192, 192, 0.2)'
+        ],
+        borderColor: [
+        'rgba(75, 192, 192, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Hydro",
+        data: {{ chart_data["Hydro"] }},
+        backgroundColor: [
+        'rgba(153, 102, 255, 0.2)'
+        ],
+        borderColor: [
+        'rgba(153, 102, 255, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Nuclear",
+        data: {{ chart_data["Nuclear"] }},
+        backgroundColor: [
+        'rgba(255, 159, 64, 0.2)'
+        ],
+        borderColor: [
+        'rgba(255, 159, 64, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Other",
+        data: {{ chart_data["Other"] }},
+        backgroundColor: [
+        'rgba(255, 99, 132, 0.2)'
+        ],
+        borderColor: [
+        'rgba(255, 99, 132, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Solar",
+        data: {{ chart_data["Solar"] }},
+        backgroundColor: [
+        'rgba(54, 162, 235, 0.2)'
+        ],
+        borderColor: [
+        'rgba(54, 162, 235, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Wind",
+        data: {{ chart_data["Wind"] }},
+        backgroundColor: [
+        'rgba(255, 206, 86, 0.2)'
+        ],
+        borderColor: [
+        'rgba(255, 206, 86, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+    ]
+  };
+
+  var options = {
+    scales: {
+      x: {
+        type: 'time',
+        time: {
+          displayFormats: {
+            hour: "MMM d, h a"
+          }
+        },
+        grid: {
+          color: 'rgba(204,204,204,0.1)',
+          borderColor: 'grey',
+          tickColor: 'grey'
+        },
+        title: {
+          display: true,
+          text: 'Time'
+        }
+      },
+      y: {
+        grid: {
+          color: 'rgba(204,204,204,0.1)',
+          borderColor: 'grey',
+          tickColor: 'grey'
+        },
+        title: {
+          display: true,
+          text: '{{ page_content[2]|safe }}'
+        }
+      }
+    },
+    legend: {
+      display: true
+    },
+    tooltips: {
+      mode: 'nearest'
+    },
+    hover: {
+      mode: 'nearest',
+      animationDuration: 0
+    },
+    
+    elements: {
+      point: {
+        radius: 0
+      }
+    }
+  };
+
+  if ($("#lineChart").length) {
+    var lineChartCanvas = $("#lineChart").get(0).getContext("2d");
+    var lineChart = new Chart(lineChartCanvas, {
+      type: 'line',
+      data: data,
+      options: options
+    });
+  }
+
+  if ($("#barChart").length) {
+    var barChartCanvas = $("#barChart").get(0).getContext("2d");
+    var barChart = new Chart(barChartCanvas, {
+      type: 'bar',
+      data: data,
+      options: {
+        plugins: {
+          title: {
+            display: true,
+            text: 'Chart.js Bar Chart - Stacked'
+          },
+        },
+        responsive: true,
+        scales: {
+          x: {
+            type: 'time',
+            time: {
+              displayFormats: {
+                hour: "MMM d"
+              }
+            },
+            stacked: true,
+          },
+          y: {
+            stacked: true
+          }
+        }
+      }
+    });
+  }
+
+
+
+  });
+
+// client side filtering
+// function filterDate(){
+//   const starting = document.getElementById('start_date').value;
+//   console.log(starting);
+//   const ending = document.getElementById('end_date').value;
+
+
+// }
+</script>
+<!-- End CHART js for this page -->
+
+
+<!-- Download CSV for this page -->
+<script>
+
+  var js_chart_Biomass = {{ chart_data["Biomass"] }}
+  var js_chart_Coal = {{ chart_data["Coal"] }}
+  var js_chart_Gas = {{ chart_data["Gas"] }}
+  var js_chart_Gas_CC = {{ chart_data["Gas-CC"] }}
+  var js_chart_Hydro = {{ chart_data["Hydro"] }}
+  var js_chart_Nuclear = {{ chart_data["Nuclear"] }}
+  var js_chart_Other = {{ chart_data["Other"] }}
+  var js_chart_Solar = {{ chart_data["Solar"] }}
+  var js_chart_Wind = {{ chart_data["Wind"] }}
+  
+  var js_chart_labels = {{ chart_labels|safe }}
+
+  function formatTime(date) {
+    let hour = date.getHours();
+    let minutes = date.getMinutes();
+    // format
+    hour = hour < 10 ? '0' + hour : hour;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+
+    return `${hour}:${minutes}`
+  }
+
+  function formatDate(date) {
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+    // formatting
+    year = year.toString()
+    month = month < 10 ? '0' + month : month;
+    day = day < 10 ? '0' + day : day;
+
+    return `${year}-${month}-${day}`
+  }
+
+  function download_csv() {
+    var csv = '';
+    var csv_credits = 'Data from: Texas Grid Analytics (grid-analytics.ece.utexas.edu)\nChart: {{page_content[0]|safe}} from {{ chart_start_date }} to {{ chart_end_date }}\n'
+    var csv_header = 'Date,Time (US Central Time),Biomass,Coal,Gas,Gas-CC,Hydro,Nuclear,Other,Solar,Wind\n';
+
+    csv += csv_credits;
+    csv += csv_header;
+
+    for (i = 0; i < js_chart_labels.length; i++) {
+      let csv_row = [];
+      let csv_dateTime = new Date(js_chart_labels[i]);
+      csv_row.push(formatDate(csv_dateTime));
+      csv_row.push(formatTime(csv_dateTime));
+      csv_row.push(js_chart_Biomass[i]);
+      csv_row.push(js_chart_Coal[i]);
+      csv_row.push(js_chart_Gas[i]);
+      csv_row.push(js_chart_Gas_CC[i]);
+      csv_row.push(js_chart_Hydro[i]);
+      csv_row.push(js_chart_Nuclear[i]);
+      csv_row.push(js_chart_Other[i]);
+      csv_row.push(js_chart_Solar[i]);
+      csv_row.push(js_chart_Wind[i]);
 
       csv = csv + csv_row.join(',') + '\n';
     }
