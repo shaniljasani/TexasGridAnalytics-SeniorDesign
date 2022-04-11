@@ -98,7 +98,7 @@
 {% endif %}
 <!-- End plugin js for this page -->
 
-{% if (page_content[0] != "Wind + Solar Power Generation") %}
+{% if ((page_content[0] != "Wind + Solar Power Generation") and (page_content[0] != "Generation by Fuel Type") and (page_content[0] != "Real-Time Market Prices")) %}
 
 <!-- CHART js for this page -->
 <script>
@@ -558,6 +558,296 @@
 
 {% endif %}
 
+{% if (page_content[0] == "Real-Time Market Prices") %}
+
+<!-- CHART js for this page -->
+<script>
+  $(function () {
+    /* ChartJS
+     * -------
+     * Data and config for chartjs
+     */
+    'use strict';
+
+  // var js_chart_data = {{ chart_data }}
+  var js_chart_labels = {{ chart_labels| safe }}
+
+  var data = {
+    labels: js_chart_labels,
+    datasets: [
+    {
+        label: "AEN ?",
+        data: {{ chart_data["LZ_AEN"] }},
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.2)'
+        ],
+        borderColor: [
+          'rgba(255,99,132,1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "CPS ?",
+        data: {{ chart_data["LZ_CPS"] }},
+        backgroundColor: [
+          'rgba(54, 162, 235, 0.2)'
+        ],
+        borderColor: [
+          'rgba(54, 162, 235, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Houston",
+        data: {{ chart_data["LZ_HOUSTON"] }},
+        backgroundColor: [
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)'
+        ],
+        borderColor: [
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "LCRA ?",
+        data: {{ chart_data["LZ_LCRA"] }},
+        backgroundColor: [
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)'
+        ],
+        borderColor: [
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "North",
+        data: {{ chart_data["LZ_NORTH"] }},
+        backgroundColor: [
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)'
+        ],
+        borderColor: [
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "RAYBN ?",
+        data: {{ chart_data["LZ_RAYBN"] }},
+        backgroundColor: [
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)'
+        ],
+        borderColor: [
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "South",
+        data: {{ chart_data["LZ_SOUTH"] }},
+        backgroundColor: [
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)'
+        ],
+        borderColor: [
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "West",
+        data: {{ chart_data["LZ_WEST"] }},
+        backgroundColor: [
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)'
+        ],
+        borderColor: [
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      }
+    ]
+  };
+
+
+  var options = {
+    scales: {
+      x: {
+        type: 'time',
+        time: {
+          parser: "yyyy-MM-dd HH:mm",
+          displayFormats: {
+            hour: "MMM d, h a"
+          }
+        },
+        grid: {
+          color: 'rgba(204,204,204,0.1)',
+          borderColor: 'grey',
+          tickColor: 'grey'
+        },
+        title: {
+          display: true,
+          text: 'Time'
+        }
+      },
+      y: {
+        grid: {
+          color: 'rgba(204,204,204,0.1)',
+          borderColor: 'grey',
+          tickColor: 'grey'
+        },
+        title: {
+          display: true,
+          text: '{{ page_content[2]|safe }}'
+        }
+      }
+    },
+    legend: {
+      display: true
+    },
+    tooltips: {
+      mode: 'nearest'
+    },
+    hover: {
+      mode: 'nearest',
+      animationDuration: 0
+    },
+    elements: {
+      point: {
+        radius: 0
+      }
+    }
+  };
+
+  if ($("#lineChart").length) {
+    var lineChartCanvas = $("#lineChart").get(0).getContext("2d");
+    var lineChart = new Chart(lineChartCanvas, {
+      type: 'line',
+      data: data,
+      options: options
+    });
+  }
+
+
+});
+
+</script>
+<!-- End CHART js for this page -->
+
+
+<!-- Download CSV for this page -->
+<script>
+
+  var js_chart_AEN = {{ chart_data["LZ_AEN"] }}
+  var js_chart_CPS = {{ chart_data["LZ_CPS"] }}
+  var js_chart_HOUSTON = {{ chart_data["LZ_HOUSTON"] }}
+  var js_chart_LCRA = {{ chart_data["LZ_LCRA"] }}
+  var js_chart_NORTH = {{ chart_data["LZ_NORTH"] }}
+  var js_chart_RAYBN = {{ chart_data["LZ_RAYBN"] }}
+  var js_chart_SOUTH = {{ chart_data["LZ_SOUTH"] }}
+  var js_chart_WEST = {{ chart_data["LZ_WEST"] }}
+  var js_chart_labels = {{ chart_labels| safe }}
+
+  function formatTime(date) {
+    let hour = date.getHours();
+    let minutes = date.getMinutes();
+    // format
+    hour = hour < 10 ? '0' + hour : hour;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+
+    return `${hour}:${minutes}`
+  }
+
+  function formatDate(date) {
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+    // formatting
+    year = year.toString()
+    month = month < 10 ? '0' + month : month;
+    day = day < 10 ? '0' + day : day;
+
+    return `${year}-${month}-${day}`
+  }
+
+  function download_csv() {
+    var csv = '';
+    var csv_credits = 'Data from: Texas Grid Analytics (grid-analytics.ece.utexas.edu)\nChart: {{page_content[0]|safe}} from {{ chart_start_date }} to {{ chart_end_date }}\n'
+    var csv_header = 'Date,Time (US Central Time),LZ_AEN,LZ_CPS,LZ_HOUSTON,LZ_LCRA,LZ_NORTH,LZ_RAYBN,LZ_SOUTH,LZ_WEST\n';
+
+    csv += csv_credits;
+    csv += csv_header;
+
+    for (i = 0; i < js_chart_labels.length; i++) {
+      let csv_row = [];
+      let csv_dateTime = new Date(js_chart_labels[i]);
+      csv_row.push(formatDate(csv_dateTime))
+      csv_row.push(formatTime(csv_dateTime))
+      csv_row.push(js_chart_AEN[i]);
+      csv_row.push(js_chart_CPS[i]);
+      csv_row.push(js_chart_HOUSTON[i]);
+      csv_row.push(js_chart_LCRA[i]);
+      csv_row.push(js_chart_NORTH[i]);
+      csv_row.push(js_chart_RAYBN[i]);
+      csv_row.push(js_chart_SOUTH[i]);
+      csv_row.push(js_chart_WEST[i]);
+
+      csv = csv + csv_row.join(',') + '\n';
+    }
+
+    var hiddenElement = document.createElement('a');
+    hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+    hiddenElement.target = '_blank';
+    hiddenElement.download = 'TGA-{{ page_content[0] }}-{{ chart_start_date }}-{{ chart_end_date }}.csv';
+    hiddenElement.click();
+  }
+
+</script>
+<!-- End Download CSV for this page -->
+
+
+{% endif %}
 
 
 {% endblock %}

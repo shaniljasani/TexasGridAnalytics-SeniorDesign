@@ -18,6 +18,12 @@ def combine_date_time(date, time):
         combined.append(str(datetime.datetime.combine(date[x], time[x]).strftime('%Y-%m-%d %H:%M')))
     return combined
 
+def convert_date_time(dates, times):
+    dates_dt = []
+    for day in dates:
+        dates_dt.append(pd.Timestamp.to_pydatetime(day))
+    return combine_date_time_24bug(dates_dt, times)
+
 def get_chart(chart_type, start_date, end_date):
 
     #connecting to sqlalchemy
@@ -112,7 +118,6 @@ def get_chart(chart_type, start_date, end_date):
     
     # -----------------------------------
     # Wind and Solar
-    # TODO add second chart on top
     # -----------------------------------
     if chart_type == "wind-and-solar":
         df = pd.read_sql_table("SPP", connection)
@@ -162,23 +167,48 @@ def get_chart(chart_type, start_date, end_date):
 
     # -----------------------------------
     # Electricity Prices
-    # TODO connect to db
     # -----------------------------------
     if chart_type == "electricity-prices":
         df = pd.read_sql_table("SMPP_LZ", connection)
         if (start_date and end_date):
-            df = df[df['DeliveryDate'] >= pd.Timestamp(start_date)]
-            df = df[df['DeliveryDate'] <= pd.Timestamp(end_date)]
-        ch_data = df["SettlementPointPrice"].tolist()
-        ch_days = df['DeliveryDate'].tolist()
-        ch_times = df['DeliveryHour'].tolist()
+            df = df[df['OperatingDay'] >= pd.Timestamp(start_date)]
+            df = df[df['OperatingDay'] <= pd.Timestamp(end_date)]
+        else:
+            # DEFAULT VIEW: one week
+            end_date = df.iloc[-1].get('OperatingDay')
+            start_date = end_date - pd.Timedelta(days=7)
+            df = df[df['OperatingDay'] >= pd.Timestamp(start_date)]
+            df = df[df['OperatingDay'] <= pd.Timestamp(end_date)] 
+        
+        df = df.sort_values(by=['SettlementPointName', 'OperatingDay', 'HourEnding'])
+
+        # print(df)
+        df = df.pivot(index=['OperatingDay','HourEnding'], columns=['SettlementPointName'], values=['SettlementPointPrice'])
+        # print(df2)
+        df.reset_index(inplace=True)
+        print(df)
+        print(df.keys())
+
+        ch_data = {
+            "LZ_AEN": df["SettlementPointPrice"]["LZ_AEN"].tolist(),
+            "LZ_CPS": df["SettlementPointPrice"]["LZ_CPS"].tolist(),
+            "LZ_HOUSTON": df["SettlementPointPrice"]["LZ_HOUSTON"].tolist(),
+            "LZ_LCRA": df["SettlementPointPrice"]["LZ_LCRA"].tolist(),
+            "LZ_NORTH": df["SettlementPointPrice"]["LZ_NORTH"].tolist(),
+            "LZ_RAYBN": df["SettlementPointPrice"]["LZ_RAYBN"].tolist(),
+            "LZ_SOUTH": df["SettlementPointPrice"]["LZ_SOUTH"].tolist(),
+            "LZ_WEST": df["SettlementPointPrice"]["LZ_WEST"].tolist()
+        }
+        print(ch_data)
+
+        ch_days = df['OperatingDay'].tolist()
+        ch_times = df['HourEnding'].tolist()
 
         ch_days_dt = []
         for day in ch_days:
             ch_days_dt.append(pd.Timestamp.to_pydatetime(day))
         
-        ch_labels = combine_date_time_24bug(ch_days_dt, ch_times)
+        ch_labels = combine_date_time(ch_days_dt, ch_times)
         return ch_data, ch_labels
 
     return pd.read_sql_table(chart_type, connection)
-
