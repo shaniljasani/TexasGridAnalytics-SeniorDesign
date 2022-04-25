@@ -6,6 +6,7 @@ import datetime as dt
 from DownloadSA import DownloadSA
 from UnzipFiles import Unzip
 import shutil
+from dotenv import load_dotenv
 
 import os
 from dotenv import load_dotenv
@@ -25,11 +26,12 @@ def updateTable(table, source):
     load_dotenv(dotenv_path="../.env")
 
     #connecting to sqlalchemy
+    load_dotenv(dotenv_path="../.env")
     database_username = os.getenv("DB_USERNAME")
     database_password = os.getenv("DB_PASSWORD")
     database_ip = os.getenv("DB_IP")
     database_name = os.getenv("DB_NAME")
-    #port = os.getenv("DB_PORT")
+    #port = "3306"
     database_connection = sqlalchemy.create_engine('mysql+pymysql://{0}:{1}@{2}/{3}'.
                                                    format(database_username, database_password, 
                                                           database_ip, database_name))
