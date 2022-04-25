@@ -26,7 +26,6 @@ def updateTable(table, source):
     load_dotenv(dotenv_path="../.env")
 
     #connecting to sqlalchemy
-    load_dotenv(dotenv_path="../.env")
     database_username = os.getenv("DB_USERNAME")
     database_password = os.getenv("DB_PASSWORD")
     database_ip = os.getenv("DB_IP")
