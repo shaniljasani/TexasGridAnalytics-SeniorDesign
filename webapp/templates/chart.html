@@ -1,0 +1,1130 @@
+{% extends "template.html" %}
+{% block page_title %} {{ page_content["title"] }} {% endblock %}
+{% block main_panel %}
+{{ super() }}
+
+<div class="content-wrapper">
+  <div class="page-header">
+    <h3 class="page-title">{{ page_content["title"] }}</h3>
+    <button type="button" onclick="download_csv()" class="btn btn-primary btn-icon-text"><i
+        class="mdi mdi-download btn-icon-prepend"></i> Download Data </button>
+  </div>
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <form action="" method="POST">
+        <div class="input-group date input-daterange" data-provide="datepicker">
+          <div class="form-group">
+            <div class="input-group">
+              <input type="text" class="form-control" name="start_date" id="start_date" value="{{ chart_start_date }}">
+              <div class="input-group-append">
+                <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+              </div>
+              <div class="input-group-addon mx-2 align-bottom"> to </div>
+              <input type="text" class="form-control" name="end_date" id="end_date" value="{{ chart_end_date }}">
+              <div class="input-group-append">
+                <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+              </div>
+              <button type="submit" class="ml-3 btn btn-primary enter-btn">View</button>
+              <!-- Client Side Filtering -->
+              <!-- <button onclick="filterDate()" class="ml-3 btn btn-primary enter-btn">Filter</button>
+                <button onclick="resetDate()" class="ml-3 btn btn-primary enter-btn">Reset</button> -->
+            </div>
+          </div>
+        </div>
+      </form>
+    </ol>
+  </nav>
+  <div class="row">
+    <div class="col-lg-12 grid-margin stretch-card" style="height: fit-content;">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="card-title">{{ page_content["title"] }}</h3>
+          <p>Data from {{ chart_start_date }} to {{ chart_end_date }}</p>
+          <canvas id="lineChart" style="height:250px"></canvas>
+          {% if (page_content["title"] == "System Frequency") %}
+          <p>A guideline (in orange) is placed at 60.00 Hz, the default electrical frequency in power systems.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if (page_content["title"] == "Wind + Photovoltaic (PV) Power Generation") %}
+  <div class="row">
+    <div class="col-xl-6 grid-margin stretch-card" style="height: fit-content;">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="card-title">{{ page_content['units'][0]|safe }}</h3>
+          <p>Data from {{ chart_start_date }} to {{ chart_end_date }}</p>
+          <canvas id="windChart" style="height:250px"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-6 grid-margin stretch-card" style="height: fit-content;">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="card-title">{{ page_content['units'][1]|safe }}</h3>
+          <p>Data from {{ chart_start_date }} to {{ chart_end_date }}</p>
+          <canvas id="solarChart" style="height:250px"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  {% endif %}
+  
+  {% if (page_content["title"] == "Generation by Fuel Type") %}
+  <div class="row">
+    <div class="col-lg-12 grid-margin stretch-card">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="card-title">{{ page_content['units'] }}</h3>
+          <p>Data from {{ chart_start_date }} to {{ chart_end_date }}</p>
+          <canvas id="barChart" style="height:250px"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  {% endif %}
+
+  {% if (page_content["title"] == "Market Prices") %}
+  <div class="row">
+    <div class="col-lg-6 grid-margin stretch-card">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title">Load Zone Map</h4>
+          <p>A Load Zone is a group of Electrical Buses. Every Electrical Bus in ERCOT with a Load must be assigned to a Load Zone for Settlement purposes. The above map depicts the geographic boundaries of each Load Zone.</p>
+        </div>
+        <img class="card-img-top" alt="ERCOT Load Zone Map" src="https://www.ercot.com/files/docs/2021/06/01/Load-Zone-Map_2021.jpg">
+      </div>
+    </div>
+    <div class="col-lg-6 grid-margin stretch-card">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title">{{ page_content["title"] }} Description</h4>
+          <p>{{ page_content["html_description"]|safe }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="row">
+    <div class="col-lg-12 grid-margin stretch-card">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title">{{ page_content["title"] }} Description</h4>
+          <p>{{ page_content["html_description"]|safe }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+  
+
+{% endblock %}
+
+{% block js_scripts %}
+<!-- Plugin js for this page -->
+<!-- <script src="assets/vendors/chart.js/Chart.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.min.js"></script> -->
+<script src="{{ url_for('static', filename='assets/vendors/date-fns/date_fns.min.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script
+  src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+{% if (page_content["title"] == "System Frequency") %}
+<script src="{{ url_for('static', filename='assets/vendors/chart.js/chartjs-plugin-annotation.min.js') }}"></script>
+{% endif %}
+<!-- End plugin js for this page -->
+
+{% if ((page_content["title"] != "Wind + Photovoltaic (PV) Power Generation") and (page_content["title"] != "Generation by Fuel Type") and (page_content["title"] != "Market Prices")) %}
+
+<!-- CHART js for this page -->
+<script>
+  $(function () {
+    /* ChartJS
+     * -------
+     * Data and config for chartjs
+     */
+    'use strict';
+
+  var js_chart_data = {{ chart_data }}
+  
+  var js_chart_labels = {{ chart_labels| safe }}
+
+  var data = {
+    labels: js_chart_labels,
+    datasets: [{
+      label: "{{ page_content['units']|safe }}",
+      data: js_chart_data,
+      backgroundColor: [
+        'rgba(54, 162, 235, 0.2)'
+      ],
+      borderColor: [
+        'rgba(54, 162, 235, 1)'        
+      ],
+      borderWidth: 2,
+      fill: false
+    }]
+  };
+
+
+  var options = {
+    interaction: {
+      intersect: false,
+      mode: 'index'
+    },
+    scales: {
+      x: {
+        type: 'time',
+        time: {
+          parser: "yyyy-MM-dd HH:mm",
+          displayFormats: {
+            hour: "MMM d, h a"
+          }
+        },
+        grid: {
+          color: 'rgba(204,204,204,0.4)',
+          borderColor: 'grey',
+          tickColor: 'grey'
+        },
+        title: {
+          display: true,
+          text: 'Date/Time'
+        }
+      },
+      y: {
+        grid: {
+          color: 'rgba(204,204,204,0.4)',
+          borderColor: 'grey',
+          tickColor: 'grey'
+        },
+        title: {
+          display: true,
+          text: '{{ page_content['units']|safe }}'
+        }
+      }
+    },
+    legend: {
+      display: true
+    },
+    tooltips: {
+      mode: 'nearest'
+    },
+    hover: {
+      mode: 'nearest',
+      animationDuration: 0
+    },
+    {% if (page_content["title"] == "System Frequency") %}
+  plugins: {
+    annotation: {
+      annotations: {
+        sixty: {
+          type: 'line',
+          yMin: 60,
+          yMax: 60,
+          borderColor: 'rgb(252, 139, 24)',
+          borderWidth: 2,
+          label: {
+            backgroundColor: 'dark-grey',
+            content: '60Hz',
+            enabled: false
+          }
+        }
+      }
+    }
+  },
+  {% endif %}
+  elements: {
+    point: {
+      radius: 0
+    }
+  }
+  };
+
+  if ($("#lineChart").length) {
+    var lineChartCanvas = $("#lineChart").get(0).getContext("2d");
+    var lineChart = new Chart(lineChartCanvas, {
+      type: 'line',
+      data: data,
+      options: options
+    });
+  }
+
+
+});
+
+// client side filtering
+// function filterDate(){
+//   const starting = document.getElementById('start_date').value;
+//   console.log(starting);
+//   const ending = document.getElementById('end_date').value;
+
+
+// }
+</script>
+<!-- End CHART js for this page -->
+
+
+<!-- Download CSV for this page -->
+<script>
+
+  var js_chart_data = {{ chart_data }}
+  var js_chart_labels = {{ chart_labels| safe }}
+
+  function formatTime(date) {
+    let hour = date.getHours();
+    let minutes = date.getMinutes();
+    // format
+    hour = hour < 10 ? '0' + hour : hour;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+
+    return `${hour}:${minutes}`
+  }
+
+  function formatDate(date) {
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+    // formatting
+    year = year.toString()
+    month = month < 10 ? '0' + month : month;
+    day = day < 10 ? '0' + day : day;
+
+    return `${year}-${month}-${day}`
+  }
+
+  function download_csv() {
+    var csv = '';
+    var csv_credits = 'Data from: Texas Grid Analytics (grid-analytics.ece.utexas.edu)\nChart: {{page_content["title"]|safe}} from {{ chart_start_date }} to {{ chart_end_date }}\n'
+    var csv_header = 'Date,Time (US Central Time),{{ page_content['units']|safe }}\n';
+
+    csv += csv_credits;
+    csv += csv_header;
+
+    for (i = 0; i < js_chart_labels.length; i++) {
+      let csv_row = [];
+      let csv_dateTime = new Date(js_chart_labels[i]);
+      csv_row.push(formatDate(csv_dateTime))
+      csv_row.push(formatTime(csv_dateTime))
+      csv_row.push(js_chart_data[i]);
+
+      csv = csv + csv_row.join(',') + '\n';
+    }
+
+    var hiddenElement = document.createElement('a');
+    hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+    hiddenElement.target = '_blank';
+    hiddenElement.download = 'TGA-{{ page_content["title"] }}-{{ chart_start_date }}-{{ chart_end_date }}.csv';
+    hiddenElement.click();
+  }
+
+</script>
+<!-- End Download CSV for this page -->
+
+{% endif %}
+
+{% if (page_content["title"] == "Wind + Photovoltaic (PV) Power Generation") %}
+
+<!-- CHART js for this page -->
+<script>
+  $(function () {
+    /* ChartJS
+    * -------
+    * Data and config for chartjs
+    */
+    'use strict';
+
+  var js_chart_data = {{ chart_data }}
+  var js_chart_labels = {{ chart_labels| safe }}
+
+  var data = {
+    labels: js_chart_labels,
+    datasets: [
+      {
+        label: "{{ page_content['units'][0]|safe }}",
+        data: js_chart_data[0],
+        backgroundColor: [
+          'rgba(54, 162, 235, 0.2)'
+        ],
+        borderColor: [
+          'rgba(54, 162, 235, 1)'
+        ],
+        borderWidth: 2,
+        fill: false
+      },
+      {
+        label: "{{ page_content['units'][1]|safe }}",
+        data: js_chart_data[1],
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.2)'
+        ],
+        borderColor: [
+          'rgba(255,99,132,1)'
+        ],
+        borderWidth: 2,
+        fill: false
+      }]
+  };
+
+  var windData = {
+    labels: js_chart_labels,
+    datasets: [
+      {
+        label: "{{ page_content['units'][0]|safe }}",
+        data: js_chart_data[0],
+        backgroundColor: [
+          'rgba(54, 162, 235, 0.2)'
+        ],
+        borderColor: [
+          'rgba(54, 162, 235, 1)'
+        ],
+        borderWidth: 2,
+        fill: false
+      }]
+  };
+
+  var solarData = {
+    labels: js_chart_labels,
+    datasets: [
+      {
+        label: "{{ page_content['units'][1]|safe }}",
+        data: js_chart_data[1],
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.2)'
+        ],
+        borderColor: [
+          'rgba(255,99,132,1)'
+        ],
+        borderWidth: 2,
+        fill: false
+      }]
+  };
+
+  var options = {
+    interaction: {
+      intersect: false,
+      mode: 'index'
+    },
+    scales: {
+      x: {
+        type: 'time',
+        time: {
+          parser: "yyyy-MM-dd HH:mm",
+          displayFormats: {
+            hour: "MMM d, h a"
+          }
+        },
+        grid: {
+          color: 'rgba(204,204,204,0.4)',
+          borderColor: 'grey',
+          tickColor: 'grey'
+        },
+        title: {
+          display: true,
+          text: 'Date/Time'
+        }
+      },
+      y: {
+        grid: {
+          color: 'rgba(204,204,204,0.4)',
+          borderColor: 'grey',
+          tickColor: 'grey'
+        },
+        title: {
+          display: true,
+          text: 'Generation in MW'
+        }
+      }
+    },
+    legend: {
+      display: true
+    },
+    tooltips: {
+      mode: 'nearest'
+    },
+    hover: {
+      mode: 'nearest',
+      animationDuration: 0
+    },
+    elements: {
+      point: {
+        radius: 0
+      }
+    }
+  };
+
+  if ($("#lineChart").length) {
+    var lineChartCanvas = $("#lineChart").get(0).getContext("2d");
+    var lineChart = new Chart(lineChartCanvas, {
+      type: 'line',
+      data: data,
+      options: options
+    });
+  }
+
+  if ($("#windChart").length) {
+    var windChartCanvas = $("#windChart").get(0).getContext("2d");
+    var windChart = new Chart(windChartCanvas, {
+      type: 'line',
+      data: windData,
+      options: options
+    });
+  }
+
+  if ($("#solarChart").length) {
+    var solarChartCanvas = $("#solarChart").get(0).getContext("2d");
+    var solarChart = new Chart(solarChartCanvas, {
+      type: 'line',
+      data: solarData,
+      options: options
+    });
+  }
+
+
+  });
+
+// client side filtering
+// function filterDate(){
+//   const starting = document.getElementById('start_date').value;
+//   console.log(starting);
+//   const ending = document.getElementById('end_date').value;
+
+
+// }
+</script>
+<!-- End CHART js for this page -->
+
+
+<!-- Download CSV for this page -->
+<script>
+
+  var js_chart_data = {{ chart_data }}
+  var js_chart_labels = {{ chart_labels| safe }}
+
+  function formatTime(date) {
+    let hour = date.getHours();
+    let minutes = date.getMinutes();
+    // format
+    hour = hour < 10 ? '0' + hour : hour;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+
+    return `${hour}:${minutes}`
+  }
+
+  function formatDate(date) {
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+    // formatting
+    year = year.toString()
+    month = month < 10 ? '0' + month : month;
+    day = day < 10 ? '0' + day : day;
+
+    return `${year}-${month}-${day}`
+  }
+
+  function download_csv() {
+    var csv = '';
+    var csv_credits = 'Data from: Texas Grid Analytics (grid-analytics.ece.utexas.edu)\nChart: {{page_content["title"]|safe}} from {{ chart_start_date }} to {{ chart_end_date }}\n'
+    var csv_header = "Date,Time (US Central Time),{{ page_content['units'][0]|safe }},{{ page_content['units'][1]|safe }}\n";
+
+    csv += csv_credits;
+    csv += csv_header;
+
+    for (i = 0; i < js_chart_labels.length; i++) {
+      let csv_row = [];
+      let csv_dateTime = new Date(js_chart_labels[i]);
+      csv_row.push(formatDate(csv_dateTime));
+      csv_row.push(formatTime(csv_dateTime));
+      csv_row.push(js_chart_data[0][i]);
+      csv_row.push(js_chart_data[1][i]);
+
+      csv = csv + csv_row.join(',') + '\n';
+    }
+
+    var hiddenElement = document.createElement('a');
+    hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+    hiddenElement.target = '_blank';
+    hiddenElement.download = 'TGA-{{ page_content["title"] }}-{{ chart_start_date }}-{{ chart_end_date }}.csv';
+    hiddenElement.click();
+  }
+
+</script>
+<!-- End Download CSV for this page -->
+
+{% endif %}
+
+{% if (page_content["title"] == "Generation by Fuel Type") %}
+
+<!-- CHART js for this page -->
+<script>
+
+  $(function () {
+    /* ChartJS
+    * -------
+    * Data and config for chartjs
+    */
+    'use strict';
+
+
+  var js_chart_labels = {{ chart_labels| safe }}
+
+  var data = {
+    labels: js_chart_labels,
+    datasets: [
+      {
+        label: "Biomass",
+        data: {{ chart_data["Biomass"] }},
+        backgroundColor: [
+        'rgba(54, 162, 235, 0.2)'
+        ],
+        borderColor: [
+          'rgba(54, 162, 235, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Coal",
+        data: {{ chart_data["Coal"] }},
+        backgroundColor: [
+        'rgba(255, 99, 132, 0.2)'
+        ],
+        borderColor: [
+        'rgba(255, 99, 132, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Gas",
+        data: {{ chart_data["Gas"] }},
+        backgroundColor: [
+        'rgba(252, 139, 24, 0.2)'
+        ],
+        borderColor: [
+        'rgba(252, 139, 24, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Gas-CC",
+        data: {{ chart_data["Gas-CC"] }},
+        backgroundColor: [
+        'rgba(0, 210, 132, 0.2)'
+        ],
+        borderColor: [
+        'rgba(0, 210, 132, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Hydro",
+        data: {{ chart_data["Hydro"] }},
+        backgroundColor: [
+        'rgba(153, 102, 255, 0.2)'
+        ],
+        borderColor: [
+        'rgba(153, 102, 255, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Nuclear",
+        data: {{ chart_data["Nuclear"] }},
+        backgroundColor: [
+        'rgba(12,132,166,0.2)'
+        ],
+        borderColor: [
+        'rgba(12,132,166,1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Other",
+        data: {{ chart_data["Other"] }},
+        backgroundColor: [
+        'rgba(141,221,208,0.2)'
+        ],
+        borderColor: [
+        'rgba(141,221,208,1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Solar",
+        data: {{ chart_data["Solar"] }},
+        backgroundColor: [
+        'rgba(111,78,123,0.2)'
+        ],
+        borderColor: [
+        'rgba(111,78,123,1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Wind",
+        data: {{ chart_data["Wind"] }},
+        backgroundColor: [
+        'rgba(201,71,47,0.2)'
+        ],
+        borderColor: [
+        'rgba(201,71,47,1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+    ]
+  };
+
+  var options = {
+    interaction: {
+      intersect: false,
+      mode: 'index'
+    },
+    scales: {
+      x: {
+        type: 'time',
+        time: {
+          displayFormats: {
+            hour: "MMM d, h a"
+          }
+        },
+        grid: {
+          color: 'rgba(204,204,204,0.4)',
+          borderColor: 'grey',
+          tickColor: 'grey'
+        },
+        title: {
+          display: true,
+          text: 'Time'
+        }
+      },
+      y: {
+        grid: {
+          color: 'rgba(204,204,204,0.4)',
+          borderColor: 'grey',
+          tickColor: 'grey'
+        },
+        title: {
+          display: true,
+          text: '{{ page_content['units']|safe }}'
+        }
+      }
+    },
+    legend: {
+      display: true
+    },
+    tooltips: {
+      mode: 'nearest'
+    },
+    hover: {
+      mode: 'nearest',
+      animationDuration: 0
+    },
+    elements: {
+      point: {
+        radius: 0
+      }
+    }
+  };
+
+  if ($("#lineChart").length) {
+    var lineChartCanvas = $("#lineChart").get(0).getContext("2d");
+    var lineChart = new Chart(lineChartCanvas, {
+      type: 'line',
+      data: data,
+      options: options
+    });
+  }
+
+  if ($("#barChart").length) {
+    var barChartCanvas = $("#barChart").get(0).getContext("2d");
+    var barChart = new Chart(barChartCanvas, {
+      type: 'bar',
+      data: data,
+      options: {
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        },
+        responsive: true,
+        scales: {
+          x: {
+            type: 'time',
+            time: {
+              displayFormats: {
+                hour: "MMM d"
+              }
+            },
+            stacked: true,
+          },
+          y: {
+            stacked: true
+          }
+        }
+      }
+    });
+  }
+
+
+
+  });
+
+// client side filtering
+// function filterDate(){
+//   const starting = document.getElementById('start_date').value;
+//   console.log(starting);
+//   const ending = document.getElementById('end_date').value;
+
+
+// }
+</script>
+<!-- End CHART js for this page -->
+
+
+<!-- Download CSV for this page -->
+<script>
+
+  var js_chart_Biomass = {{ chart_data["Biomass"] }}
+  var js_chart_Coal = {{ chart_data["Coal"] }}
+  var js_chart_Gas = {{ chart_data["Gas"] }}
+  var js_chart_Gas_CC = {{ chart_data["Gas-CC"] }}
+  var js_chart_Hydro = {{ chart_data["Hydro"] }}
+  var js_chart_Nuclear = {{ chart_data["Nuclear"] }}
+  var js_chart_Other = {{ chart_data["Other"] }}
+  var js_chart_Solar = {{ chart_data["Solar"] }}
+  var js_chart_Wind = {{ chart_data["Wind"] }}
+  
+  var js_chart_labels = {{ chart_labels|safe }}
+
+  function formatTime(date) {
+    let hour = date.getHours();
+    let minutes = date.getMinutes();
+    // format
+    hour = hour < 10 ? '0' + hour : hour;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+
+    return `${hour}:${minutes}`
+  }
+
+  function formatDate(date) {
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+    // formatting
+    year = year.toString()
+    month = month < 10 ? '0' + month : month;
+    day = day < 10 ? '0' + day : day;
+
+    return `${year}-${month}-${day}`
+  }
+
+  function download_csv() {
+    var csv = '';
+    var csv_credits = 'Data from: Texas Grid Analytics (grid-analytics.ece.utexas.edu)\nChart: {{page_content["title"]|safe}} from {{ chart_start_date }} to {{ chart_end_date }}\n'
+    var csv_header = 'Date,Time (US Central Time),Biomass,Coal,Gas,Gas-CC,Hydro,Nuclear,Other,Solar,Wind\n';
+
+    csv += csv_credits;
+    csv += csv_header;
+
+    for (i = 0; i < js_chart_labels.length; i++) {
+      let csv_row = [];
+      let csv_dateTime = new Date(js_chart_labels[i]);
+      csv_row.push(formatDate(csv_dateTime));
+      csv_row.push(formatTime(csv_dateTime));
+      csv_row.push(js_chart_Biomass[i]);
+      csv_row.push(js_chart_Coal[i]);
+      csv_row.push(js_chart_Gas[i]);
+      csv_row.push(js_chart_Gas_CC[i]);
+      csv_row.push(js_chart_Hydro[i]);
+      csv_row.push(js_chart_Nuclear[i]);
+      csv_row.push(js_chart_Other[i]);
+      csv_row.push(js_chart_Solar[i]);
+      csv_row.push(js_chart_Wind[i]);
+
+      csv = csv + csv_row.join(',') + '\n';
+    }
+
+    var hiddenElement = document.createElement('a');
+    hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+    hiddenElement.target = '_blank';
+    hiddenElement.download = 'TGA-{{ page_content["title"] }}-{{ chart_start_date }}-{{ chart_end_date }}.csv';
+    hiddenElement.click();
+  }
+
+</script>
+<!-- End Download CSV for this page -->
+
+{% endif %}
+
+{% if (page_content["title"] == "Market Prices") %}
+
+<!-- CHART js for this page -->
+<script>
+  $(function () {
+    /* ChartJS
+     * -------
+     * Data and config for chartjs
+     */
+    'use strict';
+
+  // var js_chart_data = {{ chart_data }}
+  var js_chart_labels = {{ chart_labels| safe }}
+
+  var data = {
+    labels: js_chart_labels,
+    datasets: [
+    {
+        label: "Austin Energy",
+        data: {{ chart_data["LZ_AEN"] }},
+        backgroundColor: [
+        'rgba(54, 162, 235, 0.2)'
+        ],
+        borderColor: [
+        'rgba(54, 162, 235, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "CPS Energy",
+        data: {{ chart_data["LZ_CPS"] }},
+        backgroundColor: [
+        'rgba(255, 99, 132, 0.2)'
+        ],
+        borderColor: [
+        'rgba(255, 99, 132, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Houston",
+        data: {{ chart_data["LZ_HOUSTON"] }},
+        backgroundColor: [
+        'rgba(252, 139, 24, 0.2)'
+        ],
+        borderColor: [
+        'rgba(252, 139, 24, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Lower Colorado River Authority (LCRA)",
+        data: {{ chart_data["LZ_LCRA"] }},
+        backgroundColor: [
+        'rgba(0, 210, 132, 0.2)'
+        ],
+        borderColor: [
+        'rgba(0, 210, 132, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "North",
+        data: {{ chart_data["LZ_NORTH"] }},
+        backgroundColor: [
+        'rgba(153, 102, 255, 0.2)'
+        ],
+        borderColor: [
+        'rgba(153, 102, 255, 1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Rayburn Electric Cooperative",
+        data: {{ chart_data["LZ_RAYBN"] }},
+        backgroundColor: [
+        'rgba(12,132,166,0.2)'
+        ],
+        borderColor: [
+        'rgba(12,132,166,1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "South",
+        data: {{ chart_data["LZ_SOUTH"] }},
+        backgroundColor: [
+        'rgba(141,221,208,0.2)'
+        ],
+        borderColor: [
+        'rgba(141,221,208,1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "West",
+        data: {{ chart_data["LZ_WEST"] }},
+        backgroundColor: [
+        'rgba(111,78,123,0.2)'
+        ],
+        borderColor: [
+        'rgba(111,78,123,1)'
+        ],
+        borderWidth: 1,
+        fill: false
+      }
+    ]
+  };
+
+
+  var options = {
+    interaction: {
+      intersect: false,
+      mode: 'index'
+    },
+    scales: {
+      x: {
+        type: 'time',
+        time: {
+          parser: "yyyy-MM-dd HH:mm",
+          displayFormats: {
+            hour: "MMM d, h a"
+          }
+        },
+        grid: {
+          color: 'rgba(204,204,204,0.4)',
+          borderColor: 'grey',
+          tickColor: 'grey'
+        },
+        title: {
+          display: true,
+          text: 'Time'
+        }
+      },
+      y: {
+        grid: {
+          color: 'rgba(204,204,204,0.4)',
+          borderColor: 'grey',
+          tickColor: 'grey'
+        },
+        title: {
+          display: true,
+          text: "{{ page_content['units']|safe }}"
+        }
+      }
+    },
+    legend: {
+      display: true
+    },
+    tooltips: {
+      mode: 'nearest'
+    },
+    hover: {
+      mode: 'nearest',
+      animationDuration: 0
+    },
+    elements: {
+      point: {
+        radius: 0
+      }
+    }
+  };
+
+  if ($("#lineChart").length) {
+    var lineChartCanvas = $("#lineChart").get(0).getContext("2d");
+    var lineChart = new Chart(lineChartCanvas, {
+      type: 'line',
+      data: data,
+      options: options
+    });
+  }
+
+
+});
+
+</script>
+<!-- End CHART js for this page -->
+
+
+<!-- Download CSV for this page -->
+<script>
+
+  var js_chart_AEN = {{ chart_data["LZ_AEN"] }}
+  var js_chart_CPS = {{ chart_data["LZ_CPS"] }}
+  var js_chart_HOUSTON = {{ chart_data["LZ_HOUSTON"] }}
+  var js_chart_LCRA = {{ chart_data["LZ_LCRA"] }}
+  var js_chart_NORTH = {{ chart_data["LZ_NORTH"] }}
+  var js_chart_RAYBN = {{ chart_data["LZ_RAYBN"] }}
+  var js_chart_SOUTH = {{ chart_data["LZ_SOUTH"] }}
+  var js_chart_WEST = {{ chart_data["LZ_WEST"] }}
+  var js_chart_labels = {{ chart_labels| safe }}
+
+  function formatTime(date) {
+    let hour = date.getHours();
+    let minutes = date.getMinutes();
+    // format
+    hour = hour < 10 ? '0' + hour : hour;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+
+    return `${hour}:${minutes}`
+  }
+
+  function formatDate(date) {
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+    // formatting
+    year = year.toString()
+    month = month < 10 ? '0' + month : month;
+    day = day < 10 ? '0' + day : day;
+
+    return `${year}-${month}-${day}`
+  }
+
+  function download_csv() {
+    var csv = '';
+    var csv_credits = 'Data from: Texas Grid Analytics (grid-analytics.ece.utexas.edu)\nChart: {{page_content["title"]|safe}} from {{ chart_start_date }} to {{ chart_end_date }}\n'
+    var csv_header = 'Date,Time (US Central Time),LZ_AEN,LZ_CPS,LZ_HOUSTON,LZ_LCRA,LZ_NORTH,LZ_RAYBN,LZ_SOUTH,LZ_WEST\n';
+
+    csv += csv_credits;
+    csv += csv_header;
+
+    for (i = 0; i < js_chart_labels.length; i++) {
+      let csv_row = [];
+      let csv_dateTime = new Date(js_chart_labels[i]);
+      csv_row.push(formatDate(csv_dateTime))
+      csv_row.push(formatTime(csv_dateTime))
+      csv_row.push(js_chart_AEN[i]);
+      csv_row.push(js_chart_CPS[i]);
+      csv_row.push(js_chart_HOUSTON[i]);
+      csv_row.push(js_chart_LCRA[i]);
+      csv_row.push(js_chart_NORTH[i]);
+      csv_row.push(js_chart_RAYBN[i]);
+      csv_row.push(js_chart_SOUTH[i]);
+      csv_row.push(js_chart_WEST[i]);
+
+      csv = csv + csv_row.join(',') + '\n';
+    }
+
+    var hiddenElement = document.createElement('a');
+    hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+    hiddenElement.target = '_blank';
+    hiddenElement.download = 'TGA-{{ page_content["title"] }}-{{ chart_start_date }}-{{ chart_end_date }}.csv';
+    hiddenElement.click();
+  }
+
+</script>
+<!-- End Download CSV for this page -->
+
+
+{% endif %}
+
+
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "template.html" %}
+{% block page_title %}Home{% endblock %}
+{% block main_panel %}
+{{ super() }}
+
+<h1 class="mb-3">Welcome to Texas Grid Analytics</h1>
+
+
+{% if error %}
+<div class="col-md-12 grid-margin stretch-card">
+  <div class="card bg-warning">
+    <div class="card-body">
+       <h3 class="text-white">Error: {{error}}</h3>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="col-md-12 grid-margin stretch-card">
+  <div class="card">
+    <div class="card-body">
+      <h4 class="card-title">About Texas Grid Analytics</h4>
+      <p>The electricity infrastructure and market in Texas are managed by the Electric Reliability Council of 
+        Texas (ERCOT).  It schedules the power production of over 710 generation units having a total capacity 
+        of over 86 GW and moves electric power over 46,500 miles of 69 kV and higher transmission lines.  As 
+        the nation’s largest wind power producer, ERCOT operates a total installed capacity of 25 GW wind 
+        generation capacity.  Additionally, ERCOT runs the electricity wholesale bulk-power and retail markets.  
+        Over 1800 active market participants generate, move, buy, sell, or use wholesale electricity.  To operate 
+        the Texas grid reliably, ERCOT monitors and collects grid and market conditions.  Collected data are 
+        diverse and voluminous. </p>
+      <p>Texas Grid Analytics is a web-based dashboard for for displaying grid and market conditions. In the future, we aim to have analytics functions as well.</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- Charts Selector -->
+<h1 class="mb-3">View Charts</h1>
+
+<!-- line separating title and cards -->
+<div class="grid-margin"><hr/></div>
+
+<!-- cards for each chart -->
+<div class="col-md-12 grid-margin">
+  <div class="card-columns">
+
+    {% for chart in chart_page_content %}
+
+    <div class="card">
+      <img src="{{chart_page_content[chart]['image']|safe}}" class="card-img-top" alt="Image: {{ chart_page_content[chart]['title'] }}">
+      <div class="card-body">
+        <h5 class="card-title">{{chart_page_content[chart]["title"]}}</h5>
+        <p class="card-text">{{chart_page_content[chart]["short_description"]}}</p>
+        <p class="card-text"><small class="text-muted">Data updated every {{chart_page_content[chart]["refresh"]}}</small></p>
+        <a href="{{ url_for('chart', chart_type=chart) }}" class="stretched-link"></a>
+      </div>
+    </div>
+
+    {% endfor %}
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block js_scripts %}
+
+{% endblock %}
