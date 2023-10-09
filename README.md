@@ -1,3 +1,5 @@
+Duplicate & public version of [Emeraldness/TexasGridAnalytics-SeniorDesign](https://github.com/Emeraldness/TexasGridAnalytics-SeniorDesign) as the project is being continued and has been handed off to a subsequent team.
+
 # Texas Grid Analytics - Senior Design Project
 [Texas Grid Analytics](http://grid-analytics.ece.utexas.edu/) is a web-based dashboard for for displaying grid and market conditions. 
 
